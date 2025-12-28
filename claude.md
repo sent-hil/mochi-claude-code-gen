@@ -12,19 +12,25 @@ Generate flashcards from notes in the `todo/` folder following the rules in `rul
    - Compare generated questions with existing card questions
    - Flag or skip cards that are duplicates or very similar
 5. Generate flashcards following the rules (excluding duplicates)
-6. Write output to a markdown file named `{topic}-flashcards.md` in `output/` folder
-7. **Determine target deck**: Intelligently find the most appropriate deck
+6. **Group questions into cards**: Combine multiple Q&A pairs into single cards
+   - Each Mochi card can contain multiple question-answer pairs
+   - Limit to **5 Q&A pairs per card maximum**
+   - If more than 5 pairs exist, create multiple cards
+   - Separate each Q&A pair within a card with `---`
+7. Write output to a markdown file named `{topic}-flashcards.md` in `output/` folder
+8. **Determine target deck**: Intelligently find the most appropriate deck
    - Get all available decks using `client.get_decks()`
    - Analyze the card content/topic (e.g., "Python", "Ruby", "ML", "Math")
    - Search for deck names that match the topic (case-insensitive)
    - Consider deck hierarchy - prefer leaf decks over parent decks
    - Exclude archived decks unless no active deck matches
    - Present the suggested deck to user for confirmation
-8. **Post to Mochi**: Use `mochi_client.py` to create cards in Mochi via API
+9. **Post to Mochi**: Use `mochi_client.py` to create cards in Mochi via API
    - Import and use `MochiClient` to post each card
-   - Each card's content should be the full card text (question + `---` + answer)
+   - Each card's content should include multiple Q&A pairs (up to 5)
+   - All Q&A pairs in a card separated by `---`
    - Report which cards were successfully created
-9. **Update local export**: Save newly created cards to `markdown-export/` folder
+10. **Update local export**: Save newly created cards to `markdown-export/` folder
    - Create file in appropriate deck folder hierarchy
    - Filename format: `{card-id} - {first-question-truncated}.md`
    - This keeps the local export in sync with Mochi
@@ -41,9 +47,16 @@ client = MochiClient()  # Reads MOCHI_API_KEY from environment
 # Get available decks
 decks = client.get_decks()
 
-# Create a card
+# Create a card with single Q&A
 card = client.create_card(
     content="Question text\n---\nAnswer text",
+    deck_id="deck-id-here",
+    tags=["optional", "tags"]
+)
+
+# Create a card with multiple Q&A pairs (up to 5)
+card = client.create_card(
+    content="Question 1\n---\nAnswer 1\n---\nQuestion 2\n---\nAnswer 2\n---\nQuestion 3\n---\nAnswer 3",
     deck_id="deck-id-here",
     tags=["optional", "tags"]
 )
@@ -66,7 +79,8 @@ When checking for duplicates:
 
 ## Output Format
 
-- Each flashcard separated by `---`
+- Multiple Q&A pairs grouped into single cards (max 5 pairs per card)
+- Each question and answer separated by `---`
 - No `---` at the beginning or end of file
 - Focus on practical, actionable knowledge
 - Use "How to" questions over yes/no questions
@@ -74,3 +88,24 @@ When checking for duplicates:
 - Code wrapped in triple backticks with language specified
 - Write to md file in `output/` folder
 - Report any duplicates found and excluded
+
+Example card with multiple Q&A pairs:
+```
+How do you create a list in Python?
+---
+```python
+my_list = [1, 2, 3]
+```
+---
+How do you append to a list?
+---
+```python
+my_list.append(4)
+```
+---
+How do you get list length?
+---
+```python
+len(my_list)
+```
+```
