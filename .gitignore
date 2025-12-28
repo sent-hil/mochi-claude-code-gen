@@ -1,3 +1,6 @@
 .envrc
 todo/*
 output/*
+markdown-export/*
+__pycache__
+.claude/settings.local.json
